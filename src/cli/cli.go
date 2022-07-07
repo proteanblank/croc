@@ -61,6 +61,7 @@ func Run() (err error) {
 			Description: "send file(s), or folder, over the relay",
 			ArgsUsage:   "[filename(s) or folder]",
 			Flags: []cli.Flag{
+				&cli.BoolFlag{Name: "zip", Usage: "zip folder before sending"},
 				&cli.StringFlag{Name: "code", Aliases: []string{"c"}, Usage: "codephrase used to connect to relay"},
 				&cli.StringFlag{Name: "hash", Value: "xxhash", Usage: "hash algorithm (xxhash, imohash, md5)"},
 				&cli.StringFlag{Name: "text", Aliases: []string{"t"}, Usage: "send some text"},
@@ -186,6 +187,7 @@ func send(c *cli.Context) (err error) {
 		Curve:          c.String("curve"),
 		HashAlgorithm:  c.String("hash"),
 		ThrottleUpload: c.String("throttleUpload"),
+		ZipFolder:      c.Bool("zip"),
 	}
 	if crocOptions.RelayAddress != models.DEFAULT_RELAY {
 		crocOptions.RelayAddress6 = ""
@@ -266,8 +268,7 @@ func send(c *cli.Context) (err error) {
 		// generate code phrase
 		crocOptions.SharedSecret = utils.GetRandomName()
 	}
-
-	minimalFileInfos, emptyFoldersToTransfer, totalNumberFolders, err := croc.GetFilesInfo(fnames)
+	minimalFileInfos, emptyFoldersToTransfer, totalNumberFolders, err := croc.GetFilesInfo(fnames, crocOptions.ZipFolder)
 	if err != nil {
 		return
 	}
